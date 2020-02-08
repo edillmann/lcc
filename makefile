@@ -1,4 +1,6 @@
 # $Id$
+BUILDDIR=build
+HOSTFILE=etc/linux.c
 A=.a
 O=.o
 E=
@@ -15,9 +17,14 @@ CUSTOM=custom.mk
 include $(CUSTOM)
 B=$(BUILDDIR)/
 T=$(TSTDIR)/
+INSTALL_FILE  = install -m 744 -p -D
+INSTALL_PROGRAM = install -m 755 -p -D
+BINDIR=/usr/local/lib/lcc/bin
+LIBDIR=/usr/local/lib/lcc/lib
+INCDIR=/usr/local/lib/lcc/include
 
 what:
-	-@echo make all rcc lburg cpp lcc bprint liblcc triple clean clobber
+	-@echo make all rcc lburg cpp lcc bprint liblcc triple clean clobber install
 
 all::	rcc lburg cpp lcc bprint liblcc
 
@@ -62,7 +69,8 @@ RCCOBJS=$Balloc$O \
 	$Bsparc$O \
 	$Bstab$O \
 	$Bx86$O \
-	$Bx86linux$O
+	$Bx86linux$O \
+	$Bulp$O
 
 $Brcc$E::	$Bmain$O $Blibrcc$A $(EXTRAOBJS)
 		$(LD) $(LDFLAGS) -o $@ $Bmain$O $(EXTRAOBJS) $Blibrcc$A $(EXTRALIBS)
@@ -108,6 +116,7 @@ $Bmips$O:	$Bmips.c;	$(CC) $(CFLAGS) -c -Isrc -o $@ $Bmips.c
 $Bsparc$O:	$Bsparc.c;	$(CC) $(CFLAGS) -c -Isrc -o $@ $Bsparc.c
 $Bx86$O:	$Bx86.c;	$(CC) $(CFLAGS) -c -Isrc -o $@ $Bx86.c
 $Bx86linux$O:	$Bx86linux.c;	$(CC) $(CFLAGS) -c -Isrc -o $@ $Bx86linux.c
+$Bulp$O:	$Bulp.c;	$(CC) $(CFLAGS) -c -Isrc -o $@ $Bulp.c
 
 $Bdagcheck.c:	$Blburg$E src/dagcheck.md; $Blburg src/dagcheck.md $@
 $Balpha.c:	$Blburg$E src/alpha.md;    $Blburg src/alpha.md    $@
@@ -115,6 +124,7 @@ $Bmips.c:	$Blburg$E src/mips.md;     $Blburg src/mips.md     $@
 $Bsparc.c:	$Blburg$E src/sparc.md;    $Blburg src/sparc.md    $@
 $Bx86.c:	$Blburg$E src/x86.md;      $Blburg src/x86.md      $@
 $Bx86linux.c:	$Blburg$E src/x86linux.md; $Blburg src/x86linux.md $@
+$Bulp.c:	$Blburg$E src/ulp.md; $Blburg src/ulp.md $@
 
 $Bbprint$E:	$Bbprint$O;		$(LD) $(LDFLAGS) -o $@ $Bbprint$O 
 $Bops$E:	$Bops$O;		$(LD) $(LDFLAGS) -o $@ $Bops$O 
@@ -278,3 +288,14 @@ $B1rcc$E:	$Brcc$E $Blcc$E $Bcpp$E
 		$C -o $@ -B$B $(RCCSRCS)
 $B2rcc$E:	$B1rcc$E
 		$C -o $@ -B$B1 $(RCCSRCS)
+
+.PHONY: install
+install: lcc cpp rcc
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/bprint $(BINDIR)/bprint
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/gcc-cpp $(BINDIR)/gcc-cpp
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/lburg $(BINDIR)/lburg
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/lcc $(BINDIR)/lcc
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/cpp $(BINDIR)/cpp
+	-$(INSTALL_PROGRAM) $(BUILDDIR)/rcc $(BINDIR)/rcc
+	-$(INSTALL_FILE) ulpcc/inc/ulp_c.h $(INCDIR)/ulp_c.h
+	-$(INSTALL_FILE) ulpcc/inc/soc_ulp_c.h $(INCDIR)/soc_ulp_c.h
